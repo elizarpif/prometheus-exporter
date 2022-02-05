@@ -1,25 +1,25 @@
 # prometheus-exporter
-test prometheus and grafana
+тестовый прометей и графана
 
 ### go
-Add simple metric
+Добавим такую метрику
 ```go
 opsProcessed = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "myapp_processed_ops_total",
 		Help: "The total number of processed events",
 	}, []string{"name", "id"})
 ```
-And start server on 2112 port
+И запустим сервер на порту 2112
 ```go
 http.ListenAndServe(":2112", nil)
 ```
 
 ### Prometheus
-1) Install prometheus using brew
+1) устанавливаем прометей через brew
 ```shell
 brew install prometheus
 ```
-2) Add our application in the prometheus config
+2) добавляем в конфиг нашу приложеньку
 ```shell
 vim /opt/homebrew/etc/prometheus.yml
 ```
@@ -39,7 +39,7 @@ scrape_configs:
   static_configs:
   - targets:
     - localhost:9090
-# our application
+# наша приложенька!!!
 - job_name: myapp
   honor_timestamps: true
   scrape_interval: 10s
@@ -51,22 +51,22 @@ scrape_configs:
   - targets:
     - localhost:2112
 ```
-3) Start prometheus
+3) Запускаем Прометей
 ```shell
 brew services start prometheus
 ```
-4) Open a link in the browser `localhost:9090`
-5) Find our metric
+4) В браузере открываем ссылку `localhost:9090`
+5) Находим нашу метрику
 
 ![1](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/prometheus.png)
 
 
 ### Grafana
-1) Install
+1) Устанавливаем
 ```shell
 brew install grafana
 ```
-2) Edit the config, uncomment the next lines
+2) Поправляем конфиг, раскомментируем следующие строчки
 ```shell
 vim /opt/homebrew/etc/grafana/grafana.ini
 ```
@@ -77,17 +77,17 @@ vim /opt/homebrew/etc/grafana/grafana.ini
     40 # The public facing domain name used to access grafana from a browser
     41 domain = localhost
 ```
-3) Start
+3) Запускаем
 ```shell
 /opt/homebrew/opt/grafana/bin/grafana-server --config /opt/homebrew/etc/grafana/grafana.ini --homepath /opt/homebrew/opt/grafana/share/grafana
 ```
 
-4) Open a link in the browser `localhost:3000`
+4) В браузере открываем ссылку `localhost:3000`
 
-5) Add DataSource
+5) Добавляем DataSource
 
 ![2](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/grafana_add_data_source.png)
 
-After we see a successful test, add a dashboard and a dashboard
+После того, как мы увидели, что тест успешен, добавляем дашборд и панель
 
 ![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/grafana_panel.png)

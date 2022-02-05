@@ -13,15 +13,15 @@ import (
 )
 
 func recordMetrics() {
-	sorterNames := []string{"Alice", "Peter", "Vlad"}
-	warehouseIDs := []int64{123456, 345667, 23455}
+	names := []string{"Alice", "Peter", "Vlad"}
+	someIDs := []int64{123456, 345667, 23455}
 
 	go func() {
 		for {
-			sorterName := sorterNames[rand.Intn(3)]
-			wareHouseID := warehouseIDs[rand.Intn(3)]
+			name := names[rand.Intn(3)]
+			someID := someIDs[rand.Intn(3)]
 
-			opsProcessed.With(prometheus.Labels{"name": sorterName, "id": strconv.Itoa(int(wareHouseID))}).Inc()
+			opsProcessed.With(prometheus.Labels{"name": name, "id": strconv.Itoa(int(someID))}).Inc()
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
