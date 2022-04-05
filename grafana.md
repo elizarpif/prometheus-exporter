@@ -27,10 +27,8 @@ What is this?
 
 ![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/grafana_histogram_legend.png)
 
-_
-When you see a "dot" in the darkest red in the panel, then you can extract two additional data points:
+_When you see a "dot" in the darkest red in the panel, then you can extract two additional data points:_
 
-the time of the observation — and you know that this observation actually stems from an observation period, which is 1 minute.
-a specific 'request processing duration' bucket (for ex, between 50 ms and 100 ms)
-After reading out and rationalizing all three dimensions, we can try to put into words what this data point really means: you know that at said point in time, said bucket was hit with an average rate of 2.2 times per second, averaged across the observation period of 1 minute.
-_
+_the time of the observation — and you know that this observation actually stems from an observation period, which is 1 minute._
+_a specific 'request processing duration' bucket (for ex, between 50 ms and 100 ms)
+After reading out and rationalizing all three dimensions, we can try to put into words what this data point really means: you know that at said point in time, said bucket was hit with an average rate of 2.2 times per second, averaged across the observation period of 1 minute._
