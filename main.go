@@ -25,13 +25,32 @@ func recordMetrics() {
 			time.Sleep(500 * time.Millisecond)
 		}
 	}()
+
+	go func() {
+		for {
+			timeStart := time.Now()
+
+			tm := rand.Intn(1000)
+			time.Sleep(time.Millisecond * time.Duration(tm))
+
+			histogram.Observe(float64(time.Since(timeStart)))
+		}
+	}()
 }
 
 var (
+	// counter increments only
 	opsProcessed = promauto.NewCounterVec(prometheus.CounterOpts{
 		Name: "myapp_processed_ops_total",
 		Help: "The total number of processed events",
 	}, []string{"name", "id"})
+
+	// histogram can be helpful for timing
+	histogram = promauto.NewHistogram(prometheus.HistogramOpts{
+		Name:        "myapp_processed_time",
+		Help:        "The average time (seconds) of the process",
+		Buckets:     []float64{0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2},
+	})
 )
 
 func main() {
