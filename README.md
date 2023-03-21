@@ -91,3 +91,36 @@ vim /opt/homebrew/etc/grafana/grafana.ini
 After we see a successful test, add a dashboard and a dashboard
 
 ![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/grafana_panel.png)
+
+## Push-gateway
+1) Download push-gateway from docker and start in on port 9091
+```shell
+docker run -it -p 9091:9091 --rm prom/pushgateway
+```
+2) Add our application in the prometheus config
+```shell
+vim /opt/homebrew/etc/prometheus.yml
+```
+```yaml
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 1m
+scrape_configs:
+- job_name: prometheus
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  follow_redirects: true
+  static_configs:
+  - targets:
+    - localhost:9090
+# push gateway
+- job_name: pushgateway
+  honor_labels: true
+  static_configs:
+  - targets:
+    - localhost:9091
+```

@@ -91,3 +91,38 @@ vim /opt/homebrew/etc/grafana/grafana.ini
 После того, как мы увидели, что тест успешен, добавляем дашборд и панель
 
 ![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/grafana_panel.png)
+
+## Push-gateway
+Для кронжоб, с которых не успевают собираться метрики.
+
+1) Скачиваем push-gateway из докера и стартуем на порту 9091
+```shell
+docker run -it -p 9091:9091 --rm prom/pushgateway
+```
+2) Добавляем push-gateway в конфиг прометеуса, чтобы он мог читать метрики оттуда
+```shell
+vim /opt/homebrew/etc/prometheus.yml
+```
+```yaml
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 1m
+scrape_configs:
+- job_name: prometheus
+  honor_timestamps: true
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  metrics_path: /metrics
+  scheme: http
+  follow_redirects: true
+  static_configs:
+  - targets:
+    - localhost:9090
+# push gateway
+- job_name: pushgateway
+  honor_labels: true
+  static_configs:
+  - targets:
+    - localhost:9091
+```
