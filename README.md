@@ -124,3 +124,11 @@ scrape_configs:
   - targets:
     - localhost:9091
 ```
+
+Start gateway_pusher, go to `localhost:9091` and find our metric
+
+![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/pushgateway.png)
+
+And on prometheus as well
+
+![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/prometheus2.png)

@@ -126,3 +126,10 @@ scrape_configs:
   - targets:
     - localhost:9091
 ```
+Запускаем gateway_pusher, заходим на `localhost:9091` и находим нашу метрику
+
+![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/pushgateway.png)
+
+Находим в прометеусе эту же метрику
+
+![3](https://github.com/elizarpif/prometheus-exporter/blob/develop/screens/prometheus2.png)
