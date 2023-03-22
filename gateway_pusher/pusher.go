@@ -1,24 +1,23 @@
 package main
 
 import (
-	"context"
 	"fmt"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/push"
 )
 
-type Pusher interface {
-	Push(ctx context.Context) error
-}
-
 type pusher struct {
-	serviceName string
-	url         string
-	histogram   *prometheus.HistogramVec
+	name      string
+	url       string
+	done      chan bool
+	histogram *prometheus.HistogramVec
+	counter   *prometheus.CounterVec
+	ticker    *time.Ticker
 }
 
-func NewPusher(label, url string) *pusher {
+func NewPusher(recorderName, url string) *pusher {
 	histogramV := prometheus.NewHistogramVec(
 		prometheus.HistogramOpts{
 			Namespace: "test",
@@ -30,22 +29,65 @@ func NewPusher(label, url string) *pusher {
 	)
 	prometheus.MustRegister(histogramV)
 
+	counterVec := prometheus.NewCounterVec(prometheus.CounterOpts{
+		Namespace: "test",
+		Name:      "test4",
+		Help:      "",
+	}, []string{"service_name", "operation_result"})
+	prometheus.MustRegister(counterVec)
+
 	return &pusher{
-		serviceName: label,
-		url:         url,
-		histogram:   histogramV,
+		name:      recorderName,
+		url:       url,
+		histogram: histogramV,
+		counter:   counterVec,
+		done:      make(chan bool),
+		ticker:    time.NewTicker(time.Second * 5),
 	}
 }
 
-var errPush = fmt.Errorf("push metrics")
+func (p *pusher) Start() error {
+	for {
+		select {
+		case <-p.done:
+			return nil
+		case <-p.ticker.C:
+			err := p.add()
+			if err != nil {
+				return fmt.Errorf("add: %w", err)
+			}
+		}
+	}
+}
 
-func (p pusher) Push(ctx context.Context) error {
-	err := push.New(p.url, p.serviceName).
-		Collector(p.histogram).
-		PushContext(ctx)
+func (p *pusher) Close() error {
+	p.ticker.Stop()
+	close(p.done)
+
+	err := p.add()
 	if err != nil {
-		return errPush
+		return fmt.Errorf("close: %w", err)
 	}
 
 	return nil
+}
+
+func (p *pusher) add() error {
+	err := push.New(p.url, p.name).
+		Collector(p.histogram).
+		Collector(p.counter).
+		Add()
+	if err != nil {
+		return fmt.Errorf("add metrics: %w", err)
+	}
+
+	return nil
+}
+
+func (p *pusher) RecordLatency(result string, t float64) {
+	p.histogram.With(prometheus.Labels{"service_name": p.name, "operation_result": result}).Observe(t)
+}
+
+func (p *pusher) RecordCounter(result string) {
+	p.counter.With(prometheus.Labels{"service_name": p.name, "operation_result": result}).Inc()
 }

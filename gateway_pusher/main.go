@@ -1,40 +1,49 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
-
-	"github.com/prometheus/client_golang/prometheus"
 )
 
 var names = []string{"malina-server", "strawberry", "cake"}
 var results = []string{"error", "success"}
 var times = []float64{1.23456, 3.45667, 2.3455, 1.234, 2.456, 4.6789, 10.23556}
 
-func recordRandomHistogramMetric(vec *prometheus.HistogramVec) {
-	name := names[rand.Intn(3)]
+func recordMetric(p *pusher) {
 	t := times[rand.Intn(7)]
 	res := results[rand.Intn(2)]
 
-	vec.With(prometheus.Labels{"service_name": name, "operation_result": res}).Observe(t)
-	time.Sleep(500 * time.Millisecond)
+	p.RecordLatency(res, t)
+	p.RecordCounter(res)
+
+	fmt.Printf("recorded:\n histogram result=%v, time=%v\n counter result=%v", res, t, res)
 }
 
 func main() {
-	ctx := context.Background()
+	pp := NewPusher("cake", "localhost:9091")
 
-	pp := NewPusher("metric", "localhost:9091")
+	wt := sync.WaitGroup{}
+	wt.Add(1)
+
+	go func() {
+		err := pp.Start()
+		if err != nil {
+			panic(err)
+		}
+		wt.Done()
+	}()
 
 	for i := 0; i < 20; i++ {
-		recordRandomHistogramMetric(pp.histogram)
-
-		err := pp.Push(ctx)
-		if err != nil {
-			fmt.Printf("Push: %v\n", err)
-		}
+		recordMetric(pp)
+		time.Sleep(time.Second)
 	}
 
-	time.Sleep(time.Hour)
+	err := pp.Close()
+	if err != nil {
+		panic(err)
+	}
+
+	wt.Wait()
 }
